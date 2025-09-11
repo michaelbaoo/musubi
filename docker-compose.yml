@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: spam-quarantine-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secure_password_change_me
+      MONGO_INITDB_DATABASE: spam_quarantine
+    volumes:
+      - mongodb_data:/data/db
+      - ./scripts/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - spam-quarantine-network
+
+  redis:
+    image: redis:alpine
+    container_name: spam-quarantine-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - spam-quarantine-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spam-quarantine-app
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URL=mongodb://admin:secure_password_change_me@mongodb:27017/spam_quarantine?authSource=admin
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+    volumes:
+      - ./config:/app/config
+      - ./logs:/app/logs
+      - ./models:/app/models
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - spam-quarantine-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: spam-quarantine-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    networks:
+      - spam-quarantine-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  spam-quarantine-network:
+    driver: bridge

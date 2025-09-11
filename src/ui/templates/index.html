@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Spam Quarantine Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+        }
+        
+        .sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        
+        .filter-section {
+            margin-bottom: 25px;
+        }
+        
+        .filter-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .filter-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .filter-option input {
+            margin-right: 10px;
+        }
+        
+        .email-list {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .email-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .bulk-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .email-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .email-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .email-item.selected {
+            background: #e7f5ff;
+            border-left: 4px solid #667eea;
+        }
+        
+        .email-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+        
+        .email-sender {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .email-date {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .email-subject {
+            color: #495057;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        .email-preview {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .email-meta {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .threat-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .threat-critical {
+            background: #fed7d7;
+            color: #9b2c2c;
+        }
+        
+        .threat-high {
+            background: #feebc8;
+            color: #975a16;
+        }
+        
+        .threat-medium {
+            background: #fef5e7;
+            color: #996515;
+        }
+        
+        .threat-low {
+            background: #e6fffa;
+            color: #234e52;
+        }
+        
+        .spam-score {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+        
+        .score-bar {
+            width: 50px;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78, #f6ad55, #f56565);
+            transition: width 0.3s;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            margin-bottom: 20px;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .detection-reasons {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .detection-reasons h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .detection-reasons ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .detection-reasons li {
+            padding: 5px 0;
+            color: #666;
+        }
+        
+        .detection-reasons li:before {
+            content: "⚠️";
+            margin-right: 8px;
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📧 Email Spam Quarantine Dashboard</h1>
+            <p style="color: #666;">Manage and review quarantined emails</p>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalQuarantined">0</div>
+                    <div class="stat-label">Quarantined</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="todayCount">0</div>
+                    <div class="stat-label">Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="criticalCount">0</div>
+                    <div class="stat-label">Critical Threats</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avgScore">0%</div>
+                    <div class="stat-label">Avg Spam Score</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <input type="text" class="search-box" placeholder="Search emails..." id="searchBox">
+                
+                <div class="filter-section">
+                    <h3>Threat Level</h3>
+                    <div class="filter-option">
+                        <input type="checkbox" id="filterCritical" checked>
+                        <label for="filterCritical">Critical</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="filterHigh" checked>
+                        <label for="filterHigh">High</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="filterMedium" checked>
+                        <label for="filterMedium">Medium</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="filterLow" checked>
+                        <label for="filterLow">Low</label>
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <h3>Date Range</h3>
+                    <select id="dateRange" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+                        <option value="today">Today</option>
+                        <option value="week" selected>Last 7 days</option>
+                        <option value="month">Last 30 days</option>
+                        <option value="all">All time</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="refreshEmails()">
+                    🔄 Refresh
+                </button>
+            </div>
+            
+            <div class="email-list">
+                <div class="email-controls">
+                    <div class="bulk-actions">
+                        <button class="btn btn-success" onclick="bulkAction('allow')">✅ Allow Selected</button>
+                        <button class="btn btn-danger" onclick="bulkAction('block')">🚫 Block Selected</button>
+                        <button class="btn btn-danger" onclick="bulkAction('delete')">🗑️ Delete Selected</button>
+                    </div>
+                    <div>
+                        <label>
+                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                            Select All
+                        </label>
+                    </div>
+                </div>
+                
+                <div id="emailList">
+                    <!-- Emails will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="emailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalSubject">Email Details</h2>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Email details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" onclick="reviewEmail('allow')">Allow & Whitelist</button>
+                <button class="btn btn-primary" onclick="reviewEmail('release')">Release Once</button>
+                <button class="btn btn-danger" onclick="reviewEmail('block')">Block Sender</button>
+                <button class="btn" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let emails = [];
+        let selectedEmails = new Set();
+        let currentEmailId = null;
+        
+        async function loadEmails() {
+            try {
+                const response = await fetch('/api/quarantine/emails');
+                emails = await response.json();
+                renderEmails();
+                updateStats();
+            } catch (error) {
+                console.error('Failed to load emails:', error);
+            }
+        }
+        
+        function renderEmails() {
+            const container = document.getElementById('emailList');
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            
+            const filteredEmails = emails.filter(email => {
+                // Search filter
+                if (searchTerm && !email.subject.toLowerCase().includes(searchTerm) && 
+                    !email.sender.toLowerCase().includes(searchTerm)) {
+                    return false;
+                }
+                
+                // Threat level filter
+                const filterMap = {
+                    'critical': document.getElementById('filterCritical').checked,
+                    'high': document.getElementById('filterHigh').checked,
+                    'medium': document.getElementById('filterMedium').checked,
+                    'low': document.getElementById('filterLow').checked
+                };
+                
+                return filterMap[email.threat_level];
+            });
+            
+            container.innerHTML = filteredEmails.map(email => `
+                <div class="email-item ${selectedEmails.has(email.id) ? 'selected' : ''}" 
+                     onclick="toggleEmailSelection('${email.id}')"
+                     ondblclick="showEmailDetails('${email.id}')">
+                    <div class="email-header">
+                        <div>
+                            <div class="email-sender">${email.sender}</div>
+                            <div class="email-subject">${email.subject}</div>
+                        </div>
+                        <div class="email-date">${new Date(email.quarantine_date).toLocaleDateString()}</div>
+                    </div>
+                    <div class="email-preview">${email.body_preview}</div>
+                    <div class="email-meta">
+                        <span class="threat-badge threat-${email.threat_level}">${email.threat_level}</span>
+                        <div class="spam-score">
+                            <span>Spam: ${Math.round(email.spam_score * 100)}%</span>
+                            <div class="score-bar">
+                                <div class="score-fill" style="width: ${email.spam_score * 100}%"></div>
+                            </div>
+                        </div>
+                        ${email.has_attachments ? '<span>📎 Attachments</span>' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updateStats() {
+            const today = new Date().toDateString();
+            const todayEmails = emails.filter(e => new Date(e.quarantine_date).toDateString() === today);
+            const criticalEmails = emails.filter(e => e.threat_level === 'critical');
+            const avgScore = emails.reduce((sum, e) => sum + e.spam_score, 0) / emails.length || 0;
+            
+            document.getElementById('totalQuarantined').textContent = emails.length;
+            document.getElementById('todayCount').textContent = todayEmails.length;
+            document.getElementById('criticalCount').textContent = criticalEmails.length;
+            document.getElementById('avgScore').textContent = Math.round(avgScore * 100) + '%';
+        }
+        
+        function toggleEmailSelection(emailId) {
+            if (selectedEmails.has(emailId)) {
+                selectedEmails.delete(emailId);
+            } else {
+                selectedEmails.add(emailId);
+            }
+            renderEmails();
+        }
+        
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll').checked;
+            if (selectAll) {
+                emails.forEach(email => selectedEmails.add(email.id));
+            } else {
+                selectedEmails.clear();
+            }
+            renderEmails();
+        }
+        
+        async function bulkAction(action) {
+            if (selectedEmails.size === 0) {
+                alert('Please select emails first');
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to ${action} ${selectedEmails.size} email(s)?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/quarantine/bulk-review', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        email_ids: Array.from(selectedEmails),
+                        action: action
+                    })
+                });
+                
+                if (response.ok) {
+                    selectedEmails.clear();
+                    await loadEmails();
+                }
+            } catch (error) {
+                console.error('Bulk action failed:', error);
+            }
+        }
+        
+        async function showEmailDetails(emailId) {
+            const email = emails.find(e => e.id === emailId);
+            if (!email) return;
+            
+            currentEmailId = emailId;
+            document.getElementById('modalSubject').textContent = email.subject;
+            
+            const response = await fetch(`/api/quarantine/email/${emailId}/summary`);
+            const summary = await response.json();
+            
+            document.getElementById('modalBody').innerHTML = `
+                <p><strong>From:</strong> ${email.sender}</p>
+                <p><strong>To:</strong> ${email.recipient}</p>
+                <p><strong>Date:</strong> ${new Date(email.quarantine_date).toLocaleString()}</p>
+                <p><strong>Spam Score:</strong> ${Math.round(email.spam_score * 100)}%</p>
+                <p><strong>Threat Level:</strong> <span class="threat-badge threat-${email.threat_level}">${email.threat_level}</span></p>
+                
+                <h3>Email Summary</h3>
+                <p>${summary.summary}</p>
+                
+                <div class="detection-reasons">
+                    <h4>Detection Reasons</h4>
+                    <ul>
+                        ${email.detection_reasons.map(reason => `<li>${reason}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <h3>Recommendation</h3>
+                <p>${summary.recommendation}</p>
+            `;
+            
+            document.getElementById('emailModal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('emailModal').style.display = 'none';
+            currentEmailId = null;
+        }
+        
+        async function reviewEmail(action) {
+            if (!currentEmailId) return;
+            
+            try {
+                const response = await fetch(`/api/quarantine/email/${currentEmailId}/review`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({action: action})
+                });
+                
+                if (response.ok) {
+                    closeModal();
+                    await loadEmails();
+                }
+            } catch (error) {
+                console.error('Review action failed:', error);
+            }
+        }
+        
+        function refreshEmails() {
+            loadEmails();
+        }
+        
+        // Event listeners
+        document.getElementById('searchBox').addEventListener('input', renderEmails);
+        document.querySelectorAll('.filter-option input').forEach(checkbox => {
+            checkbox.addEventListener('change', renderEmails);
+        });
+        
+        // Load emails on page load
+        loadEmails();
+        
+        // Refresh every 30 seconds
+        setInterval(loadEmails, 30000);
+    </script>
+</body>
+</html>
