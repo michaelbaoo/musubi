@@ -2,7 +2,7 @@
 
 A comprehensive, enterprise-grade email spam quarantine system with machine learning-based detection, similar to UCSD's spam quarantine system. Features email summarization, allow/block management, and seamless Gmail/Outlook integration.
 
-## 🚀 Key Features
+## key features
 
 ### Spam Detection
 - **Multi-layered ML Detection**: Ensemble of Random Forest, Gradient Boosting, Naive Bayes, and Logistic Regression
@@ -31,7 +31,7 @@ A comprehensive, enterprise-grade email spam quarantine system with machine lear
 - **GDPR Compliant**: Data protection and privacy features
 - **Audit Logging**: Complete activity tracking
 
-## 📋 System Requirements
+## Sys Requirements
 
 - Python 3.8+
 - MongoDB 4.4+
@@ -39,7 +39,7 @@ A comprehensive, enterprise-grade email spam quarantine system with machine lear
 - 4GB RAM minimum (8GB recommended)
 - 10GB disk space
 
-## 🛠️ Installation
+## install
 
 ### Quick Install (Linux/macOS)
 
@@ -100,7 +100,7 @@ redis-server --daemonize yes
 python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000
 ```
 
-## 🔧 Configuration
+## Config
 
 ### Environment Variables
 
@@ -128,7 +128,7 @@ python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000
 2. Add Mail.ReadWrite permissions
 3. Configure in `config/outlook_credentials.json`
 
-## 📊 API Documentation
+## API Documentation
 
 ### Authentication
 
@@ -190,7 +190,7 @@ Content-Type: application/json
 }
 ```
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────┐     ┌──────────────┐     ┌─────────────┐
@@ -217,7 +217,7 @@ Content-Type: application/json
 - **Web UI**: React-based dashboard
 - **Database**: MongoDB for email storage, Redis for caching
 
-## 🧪 Testing
+## testing
 
 ```bash
 # Run unit tests
@@ -230,7 +230,7 @@ pytest tests/integration
 pytest --cov=src tests/
 ```
 
-## 🚀 Production Deployment
+## Production Deployment
 
 ### Using Systemd
 
@@ -261,7 +261,7 @@ docker run -d -p 8000:8000 --name quarantine email-quarantine
 - 99.5% spam detection accuracy
 - Supports 10,000+ concurrent users
 
-## 🔒 Security Features
+## Security Features
 
 - **Encryption**: AES-256 for stored content
 - **Authentication**: JWT with refresh tokens
@@ -270,7 +270,7 @@ docker run -d -p 8000:8000 --name quarantine email-quarantine
 - **Audit Logging**: Complete activity tracking
 - **2FA Support**: Optional two-factor authentication
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create feature branch (`git checkout -b feature/AmazingFeature`)
@@ -278,29 +278,13 @@ docker run -d -p 8000:8000 --name quarantine email-quarantine
 4. Push to branch (`git push origin feature/AmazingFeature`)
 5. Open Pull Request
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
 
-## 🙏 Acknowledgments
+## acknowledgments
 
 - Inspired by UCSD's spam quarantine system
 - Uses Hugging Face Transformers for NLP
 - Built with FastAPI and MongoDB
 
-## 📞 Support
-
-- Documentation: [https://docs.example.com](https://docs.example.com)
-- Issues: [GitHub Issues](https://github.com/yourusername/email-spam-quarantine/issues)
-- Email: support@example.com
-
-## 🗺️ Roadmap
-
-- [ ] Microsoft Exchange integration
-- [ ] Mobile applications (iOS/Android)
-- [ ] Advanced threat intelligence feeds
-- [ ] Multi-tenant support
-- [ ] Webhook notifications
-- [ ] GraphQL API
-- [ ] Kubernetes deployment manifests
-- [ ] Advanced analytics dashboard
